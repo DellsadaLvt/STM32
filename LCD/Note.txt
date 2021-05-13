@@ -1,0 +1,9 @@
+Pinout:
+* RS: 0:instruction; 1: data
+* R/W: 0: Write
+* Enable: start data H->L
+* Vcc : 2.7 -> 5.5 V
+
+Setup:
+1. Rs, R/w:  0 0 --> write instruction
+2. Rs, R/w:  1 0 --> write data
