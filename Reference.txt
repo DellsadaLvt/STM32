@@ -1,0 +1,102 @@
+#include "stm32f10x.h"                  // Device header
+
+
+volatile int32_t timeDelay;
+
+void sysTick_initial( uint32_t ticks);
+void Delay( uint32_t nTime);
+void configGpio( void );
+
+
+
+int main( void ){
+	sysTick_initial(1000);
+	configGpio();
+	while(1){
+		GPIO_WriteBit( GPIOC,  GPIO_Pin_13, Bit_RESET);
+		Delay(10000);
+		GPIO_WriteBit( GPIOC,  GPIO_Pin_13, Bit_SET);
+		Delay(10000);
+	}
+}
+
+void sysTick_initial( uint32_t ticks){
+	SysTick->CTRL = 0;
+	SysTick->LOAD = ticks -1;
+	NVIC_SetPriority (SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
+	SysTick->VAL = 0;
+	SysTick->CTRL |= 0x04;
+	SysTick->CTRL |= 0x02;
+	SysTick->CTRL |= 0x01;
+}
+
+void SysTick_Handler( void ){
+	if( timeDelay>0)
+		timeDelay--;
+}
+
+void Delay( uint32_t nTime){
+	timeDelay = nTime;
+	while( timeDelay != 0);
+}
+
+void configGpio( void ){
+	GPIO_InitTypeDef GPIO_InitStruct;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_13;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOC,  &GPIO_InitStruct);
+	GPIO_WriteBit( GPIOC,  GPIO_Pin_13, Bit_RESET);
+}
+
+void handleFlag( void ){
+	if( (SysTick->CTRL>>16) & 0x01){
+		timeDelay++;
+		SysTick->CTRL &= ~(0x01<<16);
+	}
+}
+
+/*==========================================================================================*/
+#include "sysTick.h"
+
+volatile uint32_t counter, counterTime;
+float fTimeMeasure;
+
+void delay_ms( uint32_t grep);
+float getTime( void );
+
+int main( void ){
+	uint32_t test2 = 2000000;
+	fTimeMeasure = 0;
+	counterTime = 0;
+	sysTickConfig(72000);
+	while(test2--);
+	fTimeMeasure= getTime();
+	while(1){
+	}
+	
+	
+}
+
+void SysTick_Handler( void ){
+	/* check flag counter */
+	if( (SysTick->CTRL>>16u & 0x01u)  ){
+		if( counter > 0)
+			counter--;
+		counterTime = counterTime + 1;
+	}
+}
+
+void delay_ms( uint32_t grep){
+	counter = grep;
+	while(counter);
+}
+
+float getTime( void ){
+	SysTick->CTRL = 0;
+	float time;
+	time = counterTime + ((71999.0 - (float)SysTick->VAL)/71999.0);
+	return time;
+}
+
