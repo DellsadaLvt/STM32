@@ -3,7 +3,7 @@
 * The AHB1 clock time2 is 72MHz
 * So that we caculate the CK_CNT freg is: 72MHz / (72 -1) = 1 MHz
 * It mean: 1 Tich coresspondig 10^-6 s
-* So with 1000 ticks coressponding 1ms
+* So with 1000 ticks coressponding 1ms.
 ==============================================*/
 
 
