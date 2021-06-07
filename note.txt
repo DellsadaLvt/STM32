@@ -1,0 +1,15 @@
+- ADON bit 
+- delay x ms
+- clock APB2 max 72 MHz , clock not exceed 14MHz
+- the regular group compose 16 sequence
+- inject group compose 4 sequences
+- temp sensor is in ADC1_in16
+- VREF is in ADC1_IN17
+- Single mode: read more
+- Countinous conversion mode:
+--- In ADC->CR2: set CONT bit, ADON bit.
+--- 16-bit ADC_DR register
+--- After the start of ADC conversion and after 14 clock cycles, the EOC
+flag is set and the 16-bit ADC Data register contains the result of the conversion.
+--- EOC reset by software
+-- Analog watchdog
