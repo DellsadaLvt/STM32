@@ -1,0 +1,8 @@
+1. The independent watchdog (IWDG) is clocked by its own dedicated low-speed clock (LSI)
+and thus stays active even if the main clock fails
+2. writing the value 0xCCCC in the Key register
+(IWDG_KR) to start IWDG, the counter starts counting down from the reset value of 0xFFF. When it
+reaches the end of count value (0x000) a reset signal is generated (IWDG reset)
+3. key value 0xAAAA is written in the IWDG_KR register, the IWDG_RLR value
+is reloaded in the counter and the watchdog reset is prevented.
+4. 
