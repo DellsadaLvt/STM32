@@ -1,5 +1,4 @@
 --cpu Cortex-M3
-".\objects\systick.o"
 ".\objects\uart.o"
 ".\objects\gpio.o"
 ".\objects\main.o"
