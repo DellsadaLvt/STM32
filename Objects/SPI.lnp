@@ -4,6 +4,7 @@
 ".\objects\gpio.o"
 ".\objects\timer.o"
 ".\objects\systick.o"
+".\objects\matrix.o"
 ".\objects\misc.o"
 ".\objects\stm32f10x_gpio.o"
 ".\objects\stm32f10x_rcc.o"

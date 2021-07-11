@@ -412,6 +412,11 @@
               <FileType>5</FileType>
               <FilePath>.\SysTick.h</FilePath>
             </File>
+            <File>
+              <FileName>Matrix.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Matrix.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -436,6 +441,11 @@
               <FileName>SysTick.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\SysTick.c</FilePath>
+            </File>
+            <File>
+              <FileName>Matrix.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Matrix.c</FilePath>
             </File>
           </Files>
         </Group>

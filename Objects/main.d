@@ -18,4 +18,4 @@
 .\objects\main.o: C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\main.o: Timer.h
 .\objects\main.o: GPIO.h
-.\objects\main.o: SysTick.h
+.\objects\main.o: Matrix.h
