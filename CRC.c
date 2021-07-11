@@ -42,11 +42,13 @@ int CRC_8bit_software( uint8_t str, uint8_t u8CountByte, uint8_t CRC_POLY ){
 void CRC_DMA_init( uint32_t *u32StrAdd , uint16_t u16Len){
 	/* enable DMA clock */
 	RCC->AHBENR |= 0x01u;
+	/* enable clock CRC */
+	RCC->AHBENR |= 0x01<<6U;
 	/* Configure the DMA channel */
 	/* Peripheral address is flash base pointer */
 	DMA1_Channel1->CPAR = (uint32_t)u32StrAdd;
 	/* memory address is the CRC data register */
-	DMA1_Channel1->CMAR = 0x40023000u;
+	DMA1_Channel1->CMAR = 0x40023000u; //0x4002 3000
 	/* config length of data */
 	DMA1_Channel1->CNDTR |= u16Len;
 	/* config control DMA register */
@@ -57,7 +59,9 @@ void CRC_DMA_init( uint32_t *u32StrAdd , uint16_t u16Len){
 	DMA1_Channel1->CCR |= (uint32_t)0x01<<6u;  	// enable peripheral incrememt mode
 																							// disable circular mode
 																							// read from periphal
-	//DMA1_Channel1->CCR |= (uint32_t)0x01;				// enable DMA channel
+	//DMA1_Channel1->CCR |= (uint32_t)0x10;				// enable DMA channel
+	
+	
 	
 	/* config CRC  */
 	/* init return value */

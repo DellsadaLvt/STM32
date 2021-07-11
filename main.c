@@ -17,7 +17,6 @@ int main( void ){
 	/* reset CRC clock */
 	RCC->AHBENR &= ~(0x01<<6U);
 	
-	CRC_value = CRC_init( (uint32_t*)str, 6u);
 	CRC_DMA_init( (uint32_t*)str, 6u );
 	while(1){
 	}
