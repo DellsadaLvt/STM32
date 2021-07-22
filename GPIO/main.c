@@ -4,6 +4,28 @@
 //	GPIOx_MODER
 // GPIOx_ODR
 
+/* struct Rcc
+{
+	int32_t	CR;
+	int32_t	CFGR;
+	int32_t	CIR;
+	int32_t APB2RSTR;
+	int32_t APB1RSTR;
+	int32_t	AHBENR;
+	int32_t	APB2ENR;
+	int32_t APB1ENR;
+	int32_t BDCR;
+	int32_t CSR;
+	
+};
+
+struct Rcc *RCC = (struct Rcc*)RccAddress;
+
+
+*/
+
+
+
 
 #include "stm32f4xx.h"  
 
