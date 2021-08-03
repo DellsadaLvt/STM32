@@ -10,7 +10,8 @@ int main( void ){
 	
 	// loop
 	while(1){
-		Hien_thi_1();
+		//Hien_thi_1();
+		Blink();
 	}
 	
 }
