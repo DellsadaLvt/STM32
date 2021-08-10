@@ -26,27 +26,27 @@ Project File Date:  08/01/2021
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
-Rebuild target 'ADC_TIM'
-compiling Filter.c...
+Rebuild Project 'ADC' - Target 'ADC_TIM'
 compiling matrix.c...
-compiling ADC.c...
-compiling DMA.c...
+compiling Filter.c...
 compiling main.c...
+compiling DMA.c...
+compiling GPIO.c...
 compiling timer.c...
+compiling ADC.c...
 compiling TIM2.c...
-TIM2.c(15): warning:  #188-D: enumerated type mixed with another type
+E:\Udemy\STM32_Course\MyLearning\Youtube\Practice_ADC\TIM2.c(15): warning:  #188-D: enumerated type mixed with another type
   volatile BitAction stateLed= 0;
 TIM2.c: 1 warning, 0 errors
-compiling GPIO.c...
-compiling misc.c...
 compiling stm32f10x_adc.c...
+compiling misc.c...
 assembling startup_stm32f10x_md.s...
-compiling stm32f10x_dma.c...
+compiling system_stm32f10x.c...
 compiling stm32f10x_exti.c...
 compiling stm32f10x_gpio.c...
-compiling system_stm32f10x.c...
-compiling stm32f10x_rcc.c...
+compiling stm32f10x_dma.c...
 compiling stm32f10x_tim.c...
+compiling stm32f10x_rcc.c...
 linking...
 Program Size: Code=3788 RO-data=268 RW-data=28 ZI-data=1636  
 ".\Objects\ADC.axf" - 0 Error(s), 1 Warning(s).
@@ -84,29 +84,29 @@ Package Vendor: Keil
    * Component: ARM::CMSIS:CORE:5.3.0
 
    * Component: Keil::Device:Startup:1.0.0
-      Source file:   Device\Source\system_stm32f10x.c
       Source file:   Device\Source\ARM\startup_stm32f10x_md.s
-      Include file:  RTE_Driver\Config\RTE_Device.h
       Source file:   Device\Source\ARM\STM32F1xx_OPT.s
+      Include file:  RTE_Driver\Config\RTE_Device.h
+      Source file:   Device\Source\system_stm32f10x.c
 
    * Component: Keil::Device:StdPeriph Drivers:ADC:3.5.0
-      Source file:   Device\StdPeriph_Driver\src\stm32f10x_adc.c
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_adc.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_adc.c
 
    * Component: Keil::Device:StdPeriph Drivers:DMA:3.5.0
-      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_dma.h
       Source file:   Device\StdPeriph_Driver\src\stm32f10x_dma.c
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_dma.h
 
    * Component: Keil::Device:StdPeriph Drivers:EXTI:3.5.0
-      Source file:   Device\StdPeriph_Driver\src\stm32f10x_exti.c
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_exti.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_exti.c
 
    * Component: Keil::Device:StdPeriph Drivers:Framework:3.5.1
+      Include file:  Device\StdPeriph_Driver\inc\misc.h
       Source file:   Device\StdPeriph_Driver\src\misc.c
-      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
       Source file:   Device\StdPeriph_Driver\templates\stm32f10x_it.c
       Include file:  Device\StdPeriph_Driver\templates\stm32f10x_it.h
-      Include file:  Device\StdPeriph_Driver\inc\misc.h
+      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
 
    * Component: Keil::Device:StdPeriph Drivers:GPIO:3.5.0
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_gpio.h
@@ -117,9 +117,9 @@ Package Vendor: Keil
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_rcc.h
 
    * Component: Keil::Device:StdPeriph Drivers:TIM:3.5.0
-      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_tim.h
       Source file:   Device\StdPeriph_Driver\src\stm32f10x_tim.c
-Build Time Elapsed:  00:00:04
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_tim.h
+Build Time Elapsed:  00:00:07
 </pre>
 </body>
 </html>
