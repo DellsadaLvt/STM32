@@ -35,6 +35,16 @@ void controlLed( bool x){
 	}
 }
 
+/*=============================== GPIO ADC MODE =================================*/
+void GPIO_ADC_DualMode( void ){
+	/* Enable clk port A */
+	RCC->APB2ENR|= 0x01 << 2u;
+	/* set pin PA0, PA1 as analog mode */
+	GPIOA->CRL &= ~(0xFF);
+}
+
+
+/*=============================== GPIO TIMER MODE =================================*/
 void GPIO_EXT_CLK_MODE1( void ){
 	/* enable clock port A and */
 	RCC->APB2ENR |= (0x01 << 2u );
@@ -45,6 +55,7 @@ void GPIO_EXT_CLK_MODE1( void ){
 	GPIOA->CRL &= ~(0x0F);
 	GPIOA->CRL |= 0x03;
 }
+
 
 
 
