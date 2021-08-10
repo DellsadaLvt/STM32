@@ -1,22 +1,17 @@
 #include "stm32f10x.h"                  // Device header
 #include "GPIO.h"
 #include "timer.h"
-#include "TIM2.h"
+#include "ADC.h"
 
-volatile uint16_t u16AdcValue, u16AdcValue2;
-volatile uint32_t u32DualADCValues[3];
-float fTemp, fKalTemp, hr, fVel;
+volatile uint16_t u16AdcValue,u16AdcValue2, u16AdcValue1;
+volatile uint32_t u32DualADCValues;
+float fTemp, fTemp1, fKalTemp, hr, fVel;
 volatile uint16_t count= 0, count2, u16prePulse, u16curPulse;
 
 int main( void ){
 	/* init config */
-  GPIO_EncoderInterface();
-	EncoderInterface();
-	TIM2_interruptsConfig( 10000u );
-	
-	/* init values */
-	u16prePulse= 0;
-	u16curPulse= 0;
+  GPIO_ADC_DualMode();
+	ADC_DualMode();
 	while(1){
 		
 	}
@@ -73,8 +68,11 @@ void TIM2_IRQHandler( void ){
 void ADC1_2_IRQHandler( void ){
 	/* Interrupts when convertion complete */
 	if( (ADC1->SR >> 1U)&1 && (ADC1->CR1>>5U)&1){
-		u16AdcValue= ADC1->DR;
-		fTemp= (3.3- (4095 - u16AdcValue)*3.3/4095)*100;
+		u32DualADCValues= ADC1->DR;
+		fTemp= (uint16_t)u32DualADCValues;
+		fTemp1= u32DualADCValues >> 16U;
+		//u16AdcValue= ADC1->DR;
+		//fTemp= (3.3- (4095 - u16AdcValue)*3.3/4095)*100;
 		//fKalTemp= kalman_single( fTemp, 500, 10);
 	}
 	/* interrupts watchdog */

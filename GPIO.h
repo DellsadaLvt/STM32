@@ -9,6 +9,8 @@ typedef enum{
 void configGPIO( void );
 void controlLed( bool x);
 void GPIOLedC13( void );
+void GPIO_ADC_DualMode( void );
+void GPIO_ADC_DualMode( void );
 void GPIO_EXT_CLK_MODE1( void );
 void GPIO_EXT_CLK_MODE2( void );
 void GPIO_TIM1_INP_CAPTURE( void );

@@ -3,5 +3,9 @@
 void ConfigADC1( void );
 void ConfigADC2( void );
 void ADCWatchdog( void );
+void ADC_DualMode( void );
+
+
+
 
 

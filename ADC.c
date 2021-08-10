@@ -80,6 +80,76 @@ void ADCWatchdog( void ){
 
 
 
+void ADC_DualMode( void ){
+	
+	/*========================== config ADC1 ==========================*/
+	/* enable clock ADC */
+	RCC->APB2ENR|= 0x01 << 9u;
+	/* choose clock ADC */
+	RCC->CFGR |= 0x03 << 14U;
+	/* set sample clk channel 0 */
+	ADC1->SMPR2|= 0x05;    			//101: 55.5 cycles
+	/* choose number of conversion */
+	/* set channel 0 in first sequence */
+	//ADC1->SQR3 |= 6u;
+	/* setup external trigger */
+	ADC1->CR2|= 0x0F << 17u; 		// internal source
+	/* set CONT bit */
+	ADC1->CR2 |= 0x01 << 1;  		// countinue conversion
+	/* set EOCIE bit */
+	ADC1->CR1  |= 0x01 << 5u; 	// enable interrupts
+	/* enable NVIC */
+	NVIC->ISER[0] |= 0x01 << 18u;
+	/* Bits 19:16 DUALMOD[3:0]: Dual mode selection */
+	ADC1->CR1 |= 0x03 << 17u; 	//0110: Regular simultaneous mode only
+	/* Bit 8 DMA: Direct memory access mode */
+	ADC1->CR2 |= 0x01 << 8u;
+	
+	
+	/*========================== config ADC2 ==========================*/
+	/* enable clock ADC */
+	RCC->APB2ENR|= 0x01 << 10u;
+	/* set sample clk channel 1 */
+	ADC2->SMPR2|= 0x05 << 3u;    //101: 55.5 cycles
+	/* Bits 23:20 L[3:0]: Regular channel sequence length */
+	/* set channel 1 in first sequence */
+	ADC2->SQR3 |= 1u;
+	/* setup external trigger */
+	ADC2->CR2|= 0x0F << 17u;     // internal source 
+	/* set CONT bit */
+	ADC2->CR2 |= 0x01 << 1;			 // continue mode
+//	/* set EOCIE bit */
+//	//ADC2->CR1  |= 0x01 << 5u;
+//	/* enable NVIC */
+//	//NVIC->ISER[0] |= 0x01 << 18u;
+
+
+  /**************************** START CONVERSION *****************************/
+	/* set ADON bit */
+	ADC2->CR2 |= 0x01;
+	/*  reset calib*/
+	ADC2->CR2 |= 0x01 <<3u;
+	while((ADC2->CR2>>3u)&0x01);
+	/* calib ADC */
+	ADC2->CR2 |= 0x01 <<2u;
+	while((ADC2->CR2>>2u)&0x01);
+	/* Bit 22 SWSTART: Start conversion of regular channels */
+	ADC2->CR2 |= 0x01 << 22u;
+	
+	
+	/* set ADON bit */
+	ADC1->CR2 |= 0x01;
+	/*  reset calib*/
+	ADC1->CR2 |= 0x01 <<3u;
+	while((ADC1->CR2>>3u)&0x01);
+	/* calib ADC */
+	ADC1->CR2 |= 0x01 <<2u;
+	while((ADC1->CR2>>2u)&0x01);
+	/* Bit 22 SWSTART: Start conversion of regular channels */
+	ADC1->CR2 |= 0x01 << 22u;
+	
+}
+
 //void initADC( void ){
 //	
 //	/* enable clock ADC */
