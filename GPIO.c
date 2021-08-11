@@ -44,6 +44,23 @@ void GPIO_ADC_DualMode( void ){
 }
 
 
+
+void GPIO_ADC2_SingleMode( void ){
+	/* Enable clk port A */
+	RCC->APB2ENR|= 0x01 << 2u;
+	/* set pin PA6 as analog mode */
+	GPIOA->CRL &= ~(0xFFFFFFFF);
+	/* config led pc13 */
+	GPIO_InitTypeDef GPIO_InitStruct;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_13;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOC,  &GPIO_InitStruct);
+	GPIO_WriteBit( GPIOC,  GPIO_Pin_13, Bit_SET);
+}
+
+
 /*=============================== GPIO TIMER MODE =================================*/
 void GPIO_EXT_CLK_MODE1( void ){
 	/* enable clock port A and */

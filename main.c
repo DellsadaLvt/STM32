@@ -1,6 +1,6 @@
 #include "stm32f10x.h"                  // Device header
 #include "GPIO.h"
-#include "timer.h"
+#include "TIM2.h"
 #include "ADC.h"
 
 volatile uint16_t u16AdcValue,u16AdcValue2, u16AdcValue1;
@@ -10,8 +10,9 @@ volatile uint16_t count= 0, count2, u16prePulse, u16curPulse;
 
 int main( void ){
 	/* init config */
-  GPIO_ADC_DualMode();
-	ADC_DualMode();
+  GPIO_ADC2_SingleMode();
+	ADC2_SingleMode();
+	TIM2_interruptsConfig(20000U);
 	while(1){
 		
 	}
@@ -44,25 +45,40 @@ void TIM1_CC_IRQHandler( void ){
 
 
 
+//void TIM2_IRQHandler( void ){
+//	/* update event */
+//	if( (TIM2->DIER & 0x01)  && (TIM2->SR& 0x01) ){
+//		/* clear flag */
+//		TIM2->SR &= ~(0x01);
+//		/* count up encoder */
+//		if( !((TIM1->CR1>>4u)&0x01)){
+//			u16curPulse= TIM1->CNT;
+//			if ( u16curPulse >= u16prePulse )
+//				fVel= (u16curPulse - u16prePulse)*6u*3.14/180u;
+//			else
+//				fVel= (60u - u16prePulse) + u16curPulse*6u*3.14/180u;
+//		}
+//		u16prePulse= u16curPulse;
+//	}
+//}
+
+
 void TIM2_IRQHandler( void ){
 	/* update event */
+	static uint8_t count;
 	if( (TIM2->DIER & 0x01)  && (TIM2->SR& 0x01) ){
 		/* clear flag */
 		TIM2->SR &= ~(0x01);
 		/* count up encoder */
-		if( !((TIM1->CR1>>4u)&0x01)){
-			u16curPulse= TIM1->CNT;
-			if ( u16curPulse >= u16prePulse )
-				fVel= (u16curPulse - u16prePulse)*6u*3.14/180u;
-			else
-				fVel= (60u - u16prePulse) + u16curPulse*6u*3.14/180u;
-		}
-		u16prePulse= u16curPulse;
+		count++;
+		/* Bit 22 SWSTART: Start conversion of regular channels */
+	  ADC2->CR2 |= 0x01 << 22u;
+		if( count%2)
+			GPIO_WriteBit( GPIOC,  GPIO_Pin_13, Bit_SET);
+		else
+			GPIO_WriteBit( GPIOC,  GPIO_Pin_13, Bit_RESET);
 	}
 }
-
-
-
 
 
 void ADC1_2_IRQHandler( void ){

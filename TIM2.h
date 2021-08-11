@@ -8,3 +8,25 @@ void TIM2_StandardConfig( void );
 void delayMsStandard( uint32_t grep);
 void blinkLed1( void );
 void TIM2_interruptsConfig( uint16_t revTime );
+void TIM2_ADC1_TIMER_TRIGGER( void );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

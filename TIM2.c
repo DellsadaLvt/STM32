@@ -12,7 +12,7 @@
 
 
 volatile uint32_t u32TimeCount= 0;
-volatile BitAction stateLed= 0;
+//volatile BitAction stateLed= 0;
 
 /*-------------------------- REGISTER SECTION -------------------------------*/
 void TIM2_config( void ){
@@ -108,7 +108,29 @@ void TIM2_interruptsConfig( uint16_t revTime ){
 	TIM2->CR1 |= 0x01;
 }
 
-
+/*=============================== TIM2 FOR ADC TRIGGER MODE =================================*/
+void TIM2_ADC1_TIMER_TRIGGER( void ){
+	/* ENABLE TIMER2 CLOCK */
+	RCC->APB1ENR |= 0x01;
+	/* TIMx prescaler (TIMx_PSC) */
+	TIM2->PSC = 7200u - 1u;
+	/* TIMx auto-reload register (TIMx_ARR) */
+	TIM2->ARR = 10000U;
+	/* SETUP COUNTER UP */
+	//TIM2->CR1 &= ~(0x01<< 4U);
+	/* Re-initialize the counter and generates an update of the registers */
+	TIM2->EGR |= 0x01;
+	/* clear interrupt flag */
+	TIM2->SR &= ~(0x01);
+	/* enable interrupts */
+	TIM2->DIER|= 1u;
+	/* enable interrupts */
+	NVIC->ISER[0] = 0x01<<28;
+	/* reset counter */
+	TIM2->CNT = 0;
+	/* TIMx control register 1 (TIMx_CR1): ENABLE COUNTER */
+	TIM2->CR1 |= 0x01;
+}
 
 
 //void TIM2_IRQHandler( void ){
