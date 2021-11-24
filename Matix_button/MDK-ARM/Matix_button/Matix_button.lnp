@@ -1,0 +1,26 @@
+--cpu Cortex-M3
+"matix_button\startup_stm32f103xb.o"
+"matix_button\main.o"
+"matix_button\gpio.o"
+"matix_button\tim.o"
+"matix_button\stm32f1xx_it.o"
+"matix_button\stm32f1xx_hal_msp.o"
+"matix_button\stm32f1xx_hal_gpio_ex.o"
+"matix_button\stm32f1xx_hal_tim.o"
+"matix_button\stm32f1xx_hal_tim_ex.o"
+"matix_button\stm32f1xx_hal.o"
+"matix_button\stm32f1xx_hal_rcc.o"
+"matix_button\stm32f1xx_hal_rcc_ex.o"
+"matix_button\stm32f1xx_hal_gpio.o"
+"matix_button\stm32f1xx_hal_dma.o"
+"matix_button\stm32f1xx_hal_cortex.o"
+"matix_button\stm32f1xx_hal_pwr.o"
+"matix_button\stm32f1xx_hal_flash.o"
+"matix_button\stm32f1xx_hal_flash_ex.o"
+"matix_button\stm32f1xx_hal_exti.o"
+"matix_button\system_stm32f1xx.o"
+"matix_button\matrix_button.o"
+--library_type=microlib --strict --scatter "Matix_button\Matix_button.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Matix_button.map" -o Matix_button\Matix_button.axf
