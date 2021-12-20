@@ -1,0 +1,27 @@
+--cpu Cortex-M3
+"glcd_spi\startup_stm32f103xb.o"
+"glcd_spi\main.o"
+"glcd_spi\gpio.o"
+"glcd_spi\spi.o"
+"glcd_spi\stm32f1xx_it.o"
+"glcd_spi\stm32f1xx_hal_msp.o"
+"glcd_spi\stm32f1xx_hal_gpio_ex.o"
+"glcd_spi\stm32f1xx_hal_spi.o"
+"glcd_spi\stm32f1xx_hal.o"
+"glcd_spi\stm32f1xx_hal_rcc.o"
+"glcd_spi\stm32f1xx_hal_rcc_ex.o"
+"glcd_spi\stm32f1xx_hal_gpio.o"
+"glcd_spi\stm32f1xx_hal_dma.o"
+"glcd_spi\stm32f1xx_hal_cortex.o"
+"glcd_spi\stm32f1xx_hal_pwr.o"
+"glcd_spi\stm32f1xx_hal_flash.o"
+"glcd_spi\stm32f1xx_hal_flash_ex.o"
+"glcd_spi\stm32f1xx_hal_exti.o"
+"glcd_spi\stm32f1xx_hal_tim.o"
+"glcd_spi\stm32f1xx_hal_tim_ex.o"
+"glcd_spi\system_stm32f1xx.o"
+"glcd_spi\glcd.o"
+--library_type=microlib --strict --scatter "GLCD_SPI\GLCD_SPI.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "GLCD_SPI.map" -o GLCD_SPI\GLCD_SPI.axf
