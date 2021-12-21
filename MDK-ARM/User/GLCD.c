@@ -60,6 +60,19 @@
 	#define ASCII_0			((uint8_t)48U)  /* using for text_02 arr */ 
 #endif
 
+#ifndef GLCD_GPIO
+	#define GLCD_CLK				glcd_clk_Pin
+	#define GLCD_DATA 			glcd_data_Pin
+	#define GLCD_CLK_PORT 	glcd_clk_GPIO_Port
+	#define GLCD_DATA_PORT 	glcd_data_GPIO_Port
+#endif
+
+#ifndef GLCD_FUNC_GPIO
+	#define GLCD_CLK_SET(x)						HAL_GPIO_WritePin(GLCD_CLK_PORT, GLCD_CLK, ((uint8_t)(x)>0?GPIO_PIN_SET:GPIO_PIN_RESET))
+	#define GLCD_DATA_SET(x)					HAL_GPIO_WritePin(GLCD_DATA_PORT, GLCD_DATA, ((uint8_t)(x)>0?GPIO_PIN_SET:GPIO_PIN_RESET))
+	#define TRANSFER_BIT(data, bit) 	GLCD_DATA_SET((uint8_t)(data)&(uint8_t)(bit))
+#endif
+
 typedef enum {
 	set,
 	reset
@@ -477,22 +490,6 @@ const unsigned char character_table[] = {
 /*
 	Mask functions
 */
-static user_func_status_t CS_write_pin(state_out_t state){
-	if( state == set )
-			HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
-	else if( state == reset )
-			HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
-	else
-		  return fail;
-	
-	return oke;
-}
-
-static user_func_status_t user_spi_transmit(uint8_t data){
-	HAL_SPI_Transmit(&hspi2, &data, 1u, 100u);
-	
-	return oke;
-}
 
 static user_func_status_t user_delay( uint16_t time ){
 	if( 0u == time )
@@ -503,26 +500,59 @@ static user_func_status_t user_delay( uint16_t time ){
 	return oke;
 }
 
+#ifdef GLCD_USING_SPI
+static user_func_status_t CS_write_pin(state_out_t state){
+	if( state == set )
+			HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_SET);
+	else if( state == reset )
+			HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_RESET);
+	else
+		  return fail;
+	
+	return oke;
+}
+
+static user_func_status_t user_transmit(uint8_t data){
+	HAL_SPI_Transmit(&hspi2, &data, 1u, 100u);
+	
+	return oke;
+}
+
+#else
+
+static user_func_status_t user_transmit(const uint8_t data){
+	GLCD_CLK_SET(0U);
+	for(int8_t bit= 7; bit>= 0; bit-= 1u){
+		TRANSFER_BIT(data,1u <<bit);
+		GLCD_CLK_SET(1U);
+		GLCD_CLK_SET(0U);
+	}
+	
+	return oke;
+}
+
+#endif
+
 /*
 	---------------  Basic mode  ----------------
 */
+
+
 static user_func_status_t glcd_command(const uint8_t data){
-	user_spi_transmit(COMMAND_KEY);
-	user_spi_transmit((uint8_t)(data&0xF0));
-	user_spi_transmit((uint8_t)(data<<4u));
+	user_transmit(COMMAND_KEY);
+	user_transmit((uint8_t)(data&0xF0));
+	user_transmit((uint8_t)(data<<4u));
 	
 	return oke;
 }
 
 static user_func_status_t glcd_data(const uint8_t data){
-	user_spi_transmit(DATA_KEY);
-	user_spi_transmit((uint8_t)(data&0xF0));
-	user_spi_transmit((uint8_t)(data<<4u));
+	user_transmit(DATA_KEY);
+	user_transmit((uint8_t)(data&0xF0));
+	user_transmit((uint8_t)(data<<4u));
 
 	return oke;
 }
-
-
 
 static user_func_status_t glcd_func_set(void){
 	glcd_command(BASIC_INSTRUCTION);
@@ -583,6 +613,8 @@ user_func_status_t glcd_entry_basic_mode( void ){
 	return oke;
 }
 
+
+#ifdef GLCD_USING_SPI
 user_func_status_t glcd_start(void){
 	/* enable device */
 	CS_write_pin(set);
@@ -598,6 +630,8 @@ user_func_status_t glcd_stop(void){
 	
 	return oke;
 }
+
+#endif
 
 user_func_status_t glcd_display_clear(void){
 	glcd_command(LINE_0_BASE_DDRAM);
@@ -725,7 +759,7 @@ static user_func_status_t print_using_8digit( const uint8_t vertical, const uint
 
 #endif
 
-static user_func_status_t print_using_8alpha( const uint8_t vertical, const uint8_t horizontal, const uint8_t *const line_table ){
+static user_func_status_t print_using_8characters( const uint8_t vertical, const uint8_t horizontal, const uint8_t *const line_table ){
 	static uint8_t retain_data = 0u;
 	static uint8_t column = 0u;
 	for(uint8_t i= 0u; i< 8u; i+=1u){
@@ -775,6 +809,97 @@ static user_func_status_t print_using_8alpha( const uint8_t vertical, const uint
 
 
 
+
+static user_func_status_t print_using_7characters( const uint8_t vertical, const uint8_t horizontal, const uint8_t *const line_table, uint8_t type_character, uint8_t base_line){
+	static uint8_t retain_data = 0u;
+	static uint8_t column = 0u;
+	for(uint8_t i= 0u; i< 8u; i+=1u){
+		set_index_GDRAM(vertical + i , horizontal);
+		switch ( column ){
+			case 0: // write 2 characters and half character
+				write_GDRAM(character_table[(line_table[0] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] |
+								   (character_table[(line_table[1] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 6u),
+										(character_table[(line_table[1] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] << 2u) | 
+										(character_table[(line_table[2] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 4u));
+			
+				break;
+			case 1: // write 1 remain, 2 characters, 1 half character
+				write_GDRAM((character_table[(retain_data)*8 + i] << 4u) | 
+										(character_table[(line_table[3u] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 2u),
+											(character_table[(line_table[4u] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i]) | 
+											(character_table[(line_table[5u] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 6u));
+			
+			break;
+			
+			case 2: // write 1 remain and 1 character
+				write_GDRAM((character_table[(retain_data)*8 + i] << 2u) | 
+										(character_table[(line_table[6u] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 4u),
+											(character_table[(line_table[6u] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] << 4u ));
+				break;
+		}
+	}
+	
+	column += 1u;
+	switch( column ){
+		case 1:
+			retain_data = line_table[2] - 97u + LINE_CODE_CHAR_a_GDRAM;
+			break;
+		case 2:
+			retain_data = line_table[5u] - 97u + LINE_CODE_CHAR_a_GDRAM;
+			break;
+		case 3:
+			column = 0u;
+			retain_data = 0u;
+			break;
+	}
+		
+	return oke;
+}
+
+static user_func_status_t print_using_6characters( const uint8_t vertical, const uint8_t horizontal, const uint8_t *const line_table, uint8_t type_character, uint8_t base_line){
+	static uint8_t retain_data = 0u;
+	static uint8_t column = 0u;
+	for(uint8_t i= 0u; i< 8u; i+=1u){
+		set_index_GDRAM(vertical + i , horizontal);
+		switch ( column ){
+			case 0: // write 2 characters and half character
+				write_GDRAM(character_table[(line_table[0] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] |
+								   (character_table[(line_table[1] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 6u),
+										(character_table[(line_table[1] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] << 2u) | 
+										(character_table[(line_table[2] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 4u));
+			
+				break;
+			case 1: // write 1 remain, 2 characters, 1 half character
+				write_GDRAM((character_table[(retain_data)*8 + i] << 4u) | 
+										(character_table[(line_table[3u] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 2u),
+											(character_table[(line_table[4u] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i]) | 
+											(character_table[(line_table[5u] - 97u + LINE_CODE_CHAR_a_GDRAM)*8 + i] >> 6u));
+			
+			break;
+			
+			case 2: // write 1 remain
+				write_GDRAM((character_table[(retain_data)*8 + i] << 2u), 0u);
+				break;
+		}
+	}
+	
+	column += 1u;
+	switch( column ){
+		case 1:
+			retain_data = line_table[2] - 97u + LINE_CODE_CHAR_a_GDRAM;
+			break;
+		case 2:
+			retain_data = line_table[5u] - 97u + LINE_CODE_CHAR_a_GDRAM;
+			break;
+		case 3:
+			column = 0u;
+			retain_data = 0u;
+			break;
+	}
+		
+	return oke;
+}
+
 static user_func_status_t print_using_5characters( const uint8_t vertical, const uint8_t horizontal, const uint8_t *const line_table, uint8_t type_character, uint8_t base_line){
 	static uint8_t retain_data = 0u;
 	static uint8_t column = 0u;
@@ -810,6 +935,73 @@ static user_func_status_t print_using_5characters( const uint8_t vertical, const
 	return oke;
 }
 
+static user_func_status_t print_using_4characters( const uint8_t vertical, const uint8_t horizontal, const uint8_t *const line_table, uint8_t type_character, uint8_t base_line){
+	static uint8_t retain_data = 0u;
+	static uint8_t column = 0u;
+	for(uint8_t i= 0u; i< 8u; i+=1u){
+		set_index_GDRAM(vertical + i , horizontal);
+		switch ( column ){
+			case 0: // write 2 characters and half character
+				write_GDRAM(character_table[(line_table[0] - type_character + base_line)*8 + i] |
+								   (character_table[(line_table[1] - type_character + base_line)*8 + i] >> 6u),
+										(character_table[(line_table[1] - type_character + base_line)*8 + i] << 2u) | 
+										(character_table[(line_table[2] - type_character + base_line)*8 + i] >> 4u));
+				break;
+			case 1: // write 1 remain, 2 characters
+				write_GDRAM((character_table[(retain_data)*8 + i] << 4u) | 
+										(character_table[(line_table[3u] - type_character + base_line)*8 + i] >> 2u), 0u);
+			  break;
+			
+		}
+	}
+	
+	column += 1u;
+	switch( column ){
+		case 1:
+			retain_data = line_table[2] - type_character + base_line;
+			break;
+		case 2:
+			column = 0u;
+			retain_data = 0u;
+			break;
+	}
+		
+	return oke;
+}
+
+
+
+static user_func_status_t print_using_3characters( const uint8_t vertical, const uint8_t horizontal, const uint8_t *const line_table, uint8_t type_character, uint8_t base_line){
+	static uint8_t retain_data = 0u;
+	static uint8_t column = 0u;
+	for(uint8_t i= 0u; i< 8u; i+=1u){
+		set_index_GDRAM(vertical + i , horizontal);
+		switch ( column ){
+			case 0: // write 2 characters and half character
+				write_GDRAM(character_table[(line_table[0] - type_character + base_line)*8 + i] |
+								   (character_table[(line_table[1] - type_character + base_line)*8 + i] >> 6u),
+										(character_table[(line_table[1] - type_character + base_line)*8 + i] << 2u) | 
+										(character_table[(line_table[2] - type_character + base_line)*8 + i] >> 4u));
+				break;
+			case 1: // write 1 remain, 2 characters
+				write_GDRAM((character_table[(retain_data)*8 + i] << 4u), 0u);
+			  break;
+		}
+	}
+	
+	column += 1u;
+	switch( column ){
+		case 1:
+			retain_data = line_table[2] - type_character + base_line;
+			break;
+		case 2:
+			column = 0u;
+			retain_data = 0u;
+			break;
+	}
+		
+	return oke;
+}
 
 static user_func_status_t print_using_2characters( const uint8_t vertical, const uint8_t horizontal, const uint8_t *const line_table, uint8_t type_character, uint8_t base_line ){
 	for(uint8_t i= 0u; i< 8u; i+=1u){
@@ -951,36 +1143,62 @@ user_func_status_t glcd_print_image(const unsigned char *const image){
 	return oke;
 }
 
-user_func_status_t glcd_graphic_print_string(const uint8_t vertical, const uint8_t horizontal, const uint8_t *str, signed char str_len){
+user_func_status_t glcd_graphic_print_characters(const uint8_t vertical, const uint8_t horizontal, const uint8_t *str, unsigned char str_len){
 	if( (0u == str_len) || (NULL == str) )
 		return fail;
 	
 	uint8_t offset = 0u;
-	while(str_len > 0){
-		if( str_len >= 8u ){
-			print_using_8alpha(vertical, horizontal + offset     , str);
-			print_using_8alpha(vertical, horizontal + offset + 1u, str);
-			print_using_8alpha(vertical, horizontal + offset + 2u, str);
-			str += 8u;
-			offset += 3u;
-			str_len -= 8u;
-		}
-		else if( str_len >= 5u ){
-			print_using_5characters(vertical, horizontal + offset , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
-			print_using_5characters(vertical, horizontal + offset + 1u, str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
-			str += 5u;
-			offset += 2u;
-			str_len -= 5u;
-		}
-		else if( str_len >= 2u ){
-			print_using_2characters(vertical, horizontal + offset , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
-			str += 2u;
-			str_len -= 2u;
-		  offset += 1u;
-		}
-		else{
-			print_using_1characters(vertical, horizontal + offset , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
-			str_len -= 1u;
+	while(str_len > 0u){
+		switch(str_len){
+			case 7u:
+				print_using_7characters(vertical, horizontal + offset     , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				print_using_7characters(vertical, horizontal + offset + 1u, str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				print_using_7characters(vertical, horizontal + offset + 2u, str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				str_len -= 7u;
+				break;
+			
+			case 6u:
+				print_using_6characters(vertical, horizontal + offset     , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				print_using_6characters(vertical, horizontal + offset + 1u, str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				print_using_6characters(vertical, horizontal + offset + 2u, str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				str_len -= 6u;
+				break;
+		
+			case 5u:
+				print_using_5characters(vertical, horizontal + offset , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				print_using_5characters(vertical, horizontal + offset + 1u, str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				str_len -= 5u;
+				break;
+			
+			case 4u:
+				print_using_4characters(vertical, horizontal + offset , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				print_using_4characters(vertical, horizontal + offset + 1u, str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				str_len -= 4u;
+				break;
+			
+			case 3u:
+				print_using_3characters(vertical, horizontal + offset , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				print_using_3characters(vertical, horizontal + offset + 1u, str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				str_len -= 3u;
+				break;
+			
+			case 2u:
+				print_using_2characters(vertical, horizontal + offset , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				str_len -= 2u;
+				break;
+			
+			case 1u:
+				print_using_1characters(vertical, horizontal + offset , str, ASCII_a, LINE_CODE_CHAR_a_GDRAM);
+				str_len -= 1u;
+				break;
+			
+			default:
+				print_using_8characters(vertical, horizontal + offset     , str);
+				print_using_8characters(vertical, horizontal + offset + 1u, str);
+				print_using_8characters(vertical, horizontal + offset + 2u, str);
+				str += 8u;
+				offset += 3u;
+				str_len -= 8u;
 		}
 	}
 	
@@ -988,34 +1206,34 @@ user_func_status_t glcd_graphic_print_string(const uint8_t vertical, const uint8
 }
 
 
-user_func_status_t glcd_graphic_print_digit(const uint8_t vertical, const uint8_t horizontal, const uint8_t *str, signed char str_len){
+user_func_status_t glcd_graphic_print_digit(const uint8_t vertical, const uint8_t horizontal, const uint8_t *str, unsigned char str_len){
 	if( (0u == str_len) || (NULL == str) )
 		return fail;
 	
 	uint8_t offset = 0u;
-	while(str_len > 0){
+	while(str_len > 0u){
 		switch( str_len ){
 			case 4u:
 				print_using_4digit(vertical, horizontal + offset , str);
 				print_using_4digit(vertical, horizontal + offset + 1u, str);
-				str += 4u;
+				//str += 4u;
 				str_len -= 4u;
-				offset += 2u;
+				//offset += 2u;
 				break;
 		
 			case 3u:
 				print_using_3digit(vertical, horizontal + offset , str);
 				print_using_3digit(vertical, horizontal + offset + 1u, str);
-				str += 3u;
+				//str += 3u;
 				str_len -= 3u;
-				offset += 2u;
+				//offset += 2u;
 				break;
 			
 			case 2u:
 				print_using_2characters(vertical, horizontal + offset , str, ASCII_0, LINE_CODE_CHAR_0_GDRAM);
-				str += 2u;
+				//str += 2u;
 				str_len -= 2u;
-				offset += 1u;
+				//offset += 1u;
 				break;
 			
 			case 1u:
@@ -1023,7 +1241,7 @@ user_func_status_t glcd_graphic_print_digit(const uint8_t vertical, const uint8_
 				str_len -= 1u;
 				break;
 			
-			default:
+			default:  // print 5 characters
 				print_using_5characters(vertical, horizontal + offset , str, ASCII_0, LINE_CODE_CHAR_0_GDRAM);
 				print_using_5characters(vertical, horizontal + offset + 1u, str, ASCII_0, LINE_CODE_CHAR_0_GDRAM);
 				str += 5u;
@@ -1046,7 +1264,7 @@ user_func_status_t glcd_test_graphic_mode(void){
 		user_delay(2000u);
 		glcd_print_image(logo);
 		uint8_t str[]= "The future of life";
-		glcd_graphic_print_string(GDRAM_LINE(0U), BEGIN_LINE, str, strlen((const char*)str));
+		glcd_graphic_print_characters(GDRAM_LINE(0U), BEGIN_LINE, str, strlen((const char*)str));
 		sprintf((char*)digi, "%d", u8_count);
 		glcd_graphic_print_digit(GDRAM_LINE(1U), BEGIN_LINE + 1u, digi, strlen((const char*)digi));
 		u8_count *= 11u;
