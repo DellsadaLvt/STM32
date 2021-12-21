@@ -98,8 +98,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		if(g_u8Test != NOT_BUTTON){
-		}
 		HAL_Delay(50u);
 		
   }
@@ -148,7 +146,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   UNUSED(htim);
 	static uint8_t u8MatrixButton_count = 0u;
 	u8MatrixButton_count++;
-	if(u8MatrixButton_count >= 3){
+	if(u8MatrixButton_count >= 5u){
 		u8MatrixButton_count = 0u;
 		g_u8Test = (float)buttonMatrix_scan_v2();
 	}
