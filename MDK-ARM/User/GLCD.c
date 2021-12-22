@@ -70,7 +70,7 @@
 #ifndef GLCD_FUNC_GPIO
 	#define GLCD_CLK_SET(x)						HAL_GPIO_WritePin(GLCD_CLK_PORT, GLCD_CLK, ((uint8_t)(x)>0?GPIO_PIN_SET:GPIO_PIN_RESET))
 	#define GLCD_DATA_SET(x)					HAL_GPIO_WritePin(GLCD_DATA_PORT, GLCD_DATA, ((uint8_t)(x)>0?GPIO_PIN_SET:GPIO_PIN_RESET))
-	#define TRANSFER_BIT(data, bit) 	GLCD_DATA_SET((uint8_t)(data)&(uint8_t)(bit))
+	#define TRANSFER_BIT(data, bit) 	GLCD_DATA_SET((uint8_t)(data)&(uint8_t)(1u << (bit)))
 #endif
 
 typedef enum {
@@ -523,7 +523,7 @@ static user_func_status_t user_transmit(uint8_t data){
 static user_func_status_t user_transmit(const uint8_t data){
 	GLCD_CLK_SET(0U);
 	for(int8_t bit= 7; bit>= 0; bit-= 1u){
-		TRANSFER_BIT(data,1u <<bit);
+		TRANSFER_BIT(data,bit);
 		GLCD_CLK_SET(1U);
 		GLCD_CLK_SET(0U);
 	}
