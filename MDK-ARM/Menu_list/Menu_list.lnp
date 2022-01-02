@@ -1,0 +1,27 @@
+--cpu Cortex-M3
+"menu_list\startup_stm32f103xb.o"
+"menu_list\main.o"
+"menu_list\gpio.o"
+"menu_list\stm32f1xx_it.o"
+"menu_list\stm32f1xx_hal_msp.o"
+"menu_list\stm32f1xx_hal_gpio_ex.o"
+"menu_list\stm32f1xx_hal_tim.o"
+"menu_list\stm32f1xx_hal_tim_ex.o"
+"menu_list\stm32f1xx_hal.o"
+"menu_list\stm32f1xx_hal_rcc.o"
+"menu_list\stm32f1xx_hal_rcc_ex.o"
+"menu_list\stm32f1xx_hal_gpio.o"
+"menu_list\stm32f1xx_hal_dma.o"
+"menu_list\stm32f1xx_hal_cortex.o"
+"menu_list\stm32f1xx_hal_pwr.o"
+"menu_list\stm32f1xx_hal_flash.o"
+"menu_list\stm32f1xx_hal_flash_ex.o"
+"menu_list\stm32f1xx_hal_exti.o"
+"menu_list\system_stm32f1xx.o"
+"menu_list\glcd.o"
+"menu_list\menu_list.o"
+"menu_list\matrix_button.o"
+--library_type=microlib --strict --scatter "Menu_list\Menu_list.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Menu_list.map" -o Menu_list\Menu_list.axf
